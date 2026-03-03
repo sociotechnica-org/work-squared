@@ -695,8 +695,22 @@ export function App() {
             <CameraControls />
             <div style={sectionStyle}>
               <div style={sectionHeaderStyle}>Campfire</div>
-              <Slider label='Logs' value={logsScale} min={0.5} max={5.0} step={0.1} onChange={setLogsScale} />
-              <Slider label='Flames' value={flameScale} min={0.5} max={5.0} step={0.1} onChange={setFlameScale} />
+              <Slider
+                label='Logs'
+                value={logsScale}
+                min={0.5}
+                max={5.0}
+                step={0.1}
+                onChange={setLogsScale}
+              />
+              <Slider
+                label='Flames'
+                value={flameScale}
+                min={0.5}
+                max={5.0}
+                step={0.1}
+                onChange={setFlameScale}
+              />
             </div>
             {mode === 'parchment' ? <ShaderControls /> : <KMControls />}
           </div>
