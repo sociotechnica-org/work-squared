@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useEffect, useState } from 'react'
+import { AnimatedSprite } from './components/AnimatedSprite.js'
 import { CameraRig } from './components/CameraRig.js'
 import { HexGrid } from './components/HexGrid.js'
 import { MapSprite } from './components/MapSprite.js'
@@ -559,8 +560,15 @@ function KMControls() {
   )
 }
 
+const campfireFlames = Array.from(
+  { length: 15 },
+  (_, i) => `/sprites/campfire/flame-${String(i).padStart(2, '0')}.png`
+)
+
 export function App() {
   const [panelOpen, setPanelOpen] = useState(true)
+  const [logsScale, setLogsScale] = useState(0.9)
+  const [flameScale, setFlameScale] = useState(1.6)
   const mode = useShaderMode(s => s.mode)
   const toggle = useShaderMode(s => s.toggle)
   const sprites = useSpriteState(s => s.sprites)
@@ -602,6 +610,14 @@ export function App() {
           {sprites.map(sp => (
             <MapSprite key={sp.id} coord={sp.coord} url={sp.url} scale={sp.scale} />
           ))}
+          <AnimatedSprite
+            coord={{ q: 1, r: -1, s: 0 }}
+            baseUrl='/sprites/campfire/logs.png'
+            frames={campfireFlames}
+            fps={10}
+            baseScale={logsScale}
+            frameScale={flameScale}
+          />
         </Suspense>
       </Canvas>
 
@@ -677,6 +693,11 @@ export function App() {
             <div>Scroll: zoom</div>
             <div>Click hex: select + move unit</div>
             <CameraControls />
+            <div style={sectionStyle}>
+              <div style={sectionHeaderStyle}>Campfire</div>
+              <Slider label='Logs' value={logsScale} min={0.5} max={5.0} step={0.1} onChange={setLogsScale} />
+              <Slider label='Flames' value={flameScale} min={0.5} max={5.0} step={0.1} onChange={setFlameScale} />
+            </div>
             {mode === 'parchment' ? <ShaderControls /> : <KMControls />}
           </div>
         )}
