@@ -74,7 +74,9 @@ export function AnimatedSprite({
     const indices = Array.from({ length: frameTextures.length }, (_, i) => i)
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[indices[i], indices[j]] = [indices[j], indices[i]]
+      const tmp = indices[i]!
+      indices[i] = indices[j]!
+      indices[j] = tmp
     }
     return indices
   }, [frameTextures.length])
@@ -113,7 +115,7 @@ export function AnimatedSprite({
     if (state.elapsed >= frameDuration) {
       state.elapsed -= frameDuration
       state.index = (state.index + 1) % playOrder.length
-      frameMaterial.uniforms.uTexture!.value = frameTextures[playOrder[state.index]]
+      frameMaterial.uniforms.uTexture!.value = frameTextures[playOrder[state.index]!]
     }
   })
 
