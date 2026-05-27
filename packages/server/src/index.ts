@@ -33,15 +33,13 @@ const { AuthWorkerWorkspaceDirectory } = await import('./services/workspace-dire
 import type { WorkspaceDirectory } from './services/workspace-directory.js'
 const { loadStoresConfig } = await import('./config/stores.js')
 const { handleWorkspaceWebhook } = await import('./api/workspace-webhooks.js')
-const { WorkspaceReconciler, getDisabledReconcilerStatus } = await import(
-  './services/workspace-reconciler.js'
-)
+const { WorkspaceReconciler, getDisabledReconcilerStatus } =
+  await import('./services/workspace-reconciler.js')
 // Type imports must remain static - they're erased at runtime and don't affect module loading
 import type { WorkspaceReconciler as WorkspaceReconcilerType } from './services/workspace-reconciler.js'
 import type { WorkspaceReconcilerStatus } from './services/workspace-reconciler.js'
-const { createManualReconcileHandler, createManualReconcileState } = await import(
-  './api/manual-reconcile.js'
-)
+const { createManualReconcileHandler, createManualReconcileState } =
+  await import('./api/manual-reconcile.js')
 import type { ManualReconcileState } from './api/manual-reconcile.js'
 const { getIncidentDashboardUrl } = await import('./utils/orchestration-telemetry.js')
 const { getMessageLifecycleTracker } = await import('./services/message-lifecycle-tracker.js')

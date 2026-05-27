@@ -21,7 +21,9 @@ vi.mock('./processed-message-tracker.js', () => {
   }
 
   return {
-    ProcessedMessageTracker: vi.fn(() => mockTracker),
+    ProcessedMessageTracker: vi.fn(function ProcessedMessageTrackerMock() {
+      return mockTracker
+    }),
   }
 })
 

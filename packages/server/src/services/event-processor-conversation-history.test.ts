@@ -50,12 +50,14 @@ vi.mock('../utils/logger.js', () => {
 })
 
 vi.mock('./processed-message-tracker.js', () => ({
-  ProcessedMessageTracker: vi.fn(() => ({
-    initialize: vi.fn().mockResolvedValue(undefined),
-    isProcessed: vi.fn(),
-    markProcessed: vi.fn(),
-    close: vi.fn().mockResolvedValue(undefined),
-  })),
+  ProcessedMessageTracker: vi.fn(function ProcessedMessageTrackerMock() {
+    return {
+      initialize: vi.fn().mockResolvedValue(undefined),
+      isProcessed: vi.fn(),
+      markProcessed: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+    }
+  }),
 }))
 
 // Mock StoreManager with EventEmitter methods
