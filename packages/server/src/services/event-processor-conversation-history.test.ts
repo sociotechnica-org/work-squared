@@ -76,6 +76,46 @@ const createMockAgentState = (messages: unknown[] = []) => ({
   messages,
 })
 
+const getQueryLabel = (query: unknown): string => {
+  if (
+    typeof query === 'object' &&
+    query !== null &&
+    'label' in query &&
+    typeof query.label === 'string'
+  ) {
+    return query.label
+  }
+
+  return ''
+}
+
+const createConversationContextQueryMock = ({
+  conversations = [],
+  workers = [],
+  chatMessages = [],
+}: {
+  conversations?: unknown[]
+  workers?: unknown[]
+  chatMessages?: ChatMessage[]
+}) =>
+  vi.fn((query: unknown) => {
+    const label = getQueryLabel(query)
+
+    if (label.includes("FROM 'conversations'")) {
+      return conversations
+    }
+
+    if (label.includes("FROM 'workers'")) {
+      return workers
+    }
+
+    if (label.includes("FROM 'chatMessages'")) {
+      return chatMessages
+    }
+
+    return []
+  })
+
 describe('EventProcessor conversation history builder', () => {
   let eventProcessor: EventProcessor
 
@@ -274,13 +314,6 @@ describe('EventProcessor conversation history builder', () => {
 
   it('reports actual Pi iterations from turn_end events', async () => {
     const commit = vi.fn()
-    const historicalUserMessage: ChatMessage = {
-      id: 'message-0',
-      conversationId: 'conversation-1',
-      role: 'user',
-      message: 'Previous context',
-      createdAt: new Date('2024-01-01T00:00:00Z'),
-    }
     const currentUserMessage: ChatMessage = {
       id: 'message-1',
       conversationId: 'conversation-1',
@@ -290,10 +323,7 @@ describe('EventProcessor conversation history builder', () => {
     }
     const store = {
       commit,
-      query: vi
-        .fn()
-        .mockReturnValueOnce([{ id: 'conversation-1' }])
-        .mockReturnValueOnce([historicalUserMessage, currentUserMessage]),
+      query: vi.fn().mockReturnValue([]),
     }
     const storeManager = createMockStoreManager()
     storeManager.getStore = vi.fn(() => store as any)
@@ -332,20 +362,86 @@ describe('EventProcessor conversation history builder', () => {
     } as any)
 
     expect(completed).toBe(true)
-    expect(fakeSession.agent.state.systemPrompt).toEqual(expect.any(String))
-    expect(fakeSession.agent.state.systemPrompt).not.toBe('')
-    expect(fakeSession.agent.state.messages).toEqual([
+    const completionEvents = commit.mock.calls.filter(
+      ([event]: any[]) => event?.name === 'v1.LLMResponseCompleted'
+    )
+    expect(completionEvents.length).toBe(1)
+    expect(completionEvents[0][0].args.iterations).toBe(3)
+
+    processor.stopAll()
+  })
+
+  it('seeds Pi agent prompt and historical messages before prompting', async () => {
+    const commit = vi.fn()
+    const historicalUserMessage: ChatMessage = {
+      id: 'message-0',
+      conversationId: 'conversation-1',
+      role: 'user',
+      message: 'Previous context',
+      createdAt: new Date('2024-01-01T00:00:00Z'),
+    }
+    const currentUserMessage: ChatMessage = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      role: 'user',
+      message: 'Plan this task',
+      createdAt: new Date('2024-01-01T00:01:00Z'),
+    }
+    const store = {
+      commit,
+      query: createConversationContextQueryMock({
+        conversations: [{ id: 'conversation-1' }],
+        chatMessages: [historicalUserMessage, currentUserMessage],
+      }),
+    }
+    const storeManager = createMockStoreManager()
+    storeManager.getStore = vi.fn(() => store as any)
+
+    const processor = new EventProcessor(storeManager as any)
+    const listeners: Array<(event: any) => void> = []
+    const fakeAgentState = createMockAgentState()
+    let stateBeforePrompt: ReturnType<typeof createMockAgentState> | undefined
+    const fakeSession = {
+      agent: {
+        state: fakeAgentState,
+      },
+      subscribe: vi.fn((listener: (event: any) => void) => {
+        listeners.push(listener)
+        return vi.fn()
+      }),
+      setModel: vi.fn().mockResolvedValue(undefined),
+      prompt: vi.fn().mockImplementation(async () => {
+        stateBeforePrompt = {
+          systemPrompt: fakeAgentState.systemPrompt,
+          messages: [...fakeAgentState.messages],
+        }
+
+        for (const listener of listeners) {
+          listener({ type: 'agent_end', messages: [] })
+        }
+      }),
+    }
+
+    vi.spyOn(processor as any, 'getOrCreatePiSession').mockResolvedValue({
+      session: fakeSession,
+      sessionDir: '/tmp/pi-session',
+      lastAccessedAt: Date.now(),
+    })
+
+    const completed = await (processor as any).runAgenticLoop('store-1', currentUserMessage, {
+      stopping: false,
+    } as any)
+
+    expect(completed).toBe(true)
+    expect(stateBeforePrompt?.systemPrompt).toEqual(expect.any(String))
+    expect(stateBeforePrompt?.systemPrompt).not.toBe('')
+    expect(stateBeforePrompt?.messages).toEqual([
       {
         role: 'user',
         content: 'Previous context',
         timestamp: historicalUserMessage.createdAt.getTime(),
       },
     ])
-    const completionEvents = commit.mock.calls.filter(
-      ([event]: any[]) => event?.name === 'v1.LLMResponseCompleted'
-    )
-    expect(completionEvents.length).toBe(1)
-    expect(completionEvents[0][0].args.iterations).toBe(3)
 
     processor.stopAll()
   })

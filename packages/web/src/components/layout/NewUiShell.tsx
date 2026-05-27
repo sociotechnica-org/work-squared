@@ -132,6 +132,8 @@ export const NewUiShell: React.FC<NewUiShellProps> = ({
   const { user: authUser, isAuthenticated, logout } = useAuth()
   const users = useQuery(getUsers$) ?? []
   const posthog = usePostHog()
+  const isMapSpriteDebugEnvironment =
+    import.meta.env.DEV || import.meta.env.VITE_E2E_TEST_HOOKS === 'true'
   const [showDropdown, setShowDropdown] = useState(false)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 })
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -142,7 +144,7 @@ export const NewUiShell: React.FC<NewUiShellProps> = ({
   const [isRailVisible, setIsRailVisible] = useState(!onboarding.uiPolicy.railFadingIn)
   const [mapSpriteDebugSettings, setMapSpriteDebugSettings] = useState<MapSpriteDebugSettings>(
     () => {
-      if (!import.meta.env.DEV || typeof window === 'undefined') {
+      if (!isMapSpriteDebugEnvironment || typeof window === 'undefined') {
         return DEFAULT_MAP_SPRITE_DEBUG_SETTINGS
       }
 
@@ -240,8 +242,7 @@ export const NewUiShell: React.FC<NewUiShellProps> = ({
 
   const showOnlyJarvisDuringCampfire =
     onboarding.isActive && (onboarding.phase === 'campfire' || onboarding.phase === 'not_started')
-  const showDevDebugPanel =
-    (import.meta.env.DEV || import.meta.env.VITE_E2E_TEST_HOOKS === 'true') && fullBleed
+  const showDevDebugPanel = isMapSpriteDebugEnvironment && fullBleed
   const isInitialFogEnabled = !onboarding.isFogDismissed
   const isInitialFogCurrentlyVisible = onboarding.uiPolicy.showFogOverlay && isInitialFogEnabled
 
