@@ -15,13 +15,13 @@
     "lint-all": "pnpm lint:fix && pnpm format && pnpm typecheck"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250823.0",
+    "@cloudflare/workers-types": "^4.20260527.1",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-prettier": "^5.5.5",
     "prettier": "catalog:",
     "typescript": "catalog:",
-    "wrangler": "^4.38.0"
+    "wrangler": "^4.95.0"
   }
 }

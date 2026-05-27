@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@lifebuild/shared": "workspace:*",
-    "@sentry/cloudflare": "^10.35.0"
+    "@sentry/cloudflare": "^10.54.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "miniflare": "^4.20250726.0",
+    "miniflare": "^4.20260526.0",
     "prettier": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",

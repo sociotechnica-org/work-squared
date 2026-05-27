@@ -50,12 +50,15 @@ vi.mock('../utils/logger.js', () => {
 })
 
 vi.mock('./processed-message-tracker.js', () => ({
-  ProcessedMessageTracker: vi.fn(() => ({
-    initialize: vi.fn().mockResolvedValue(undefined),
-    isProcessed: vi.fn(),
-    markProcessed: vi.fn(),
-    close: vi.fn().mockResolvedValue(undefined),
-  })),
+  // Production constructs this with `new`, so the mock must be constructible.
+  ProcessedMessageTracker: vi.fn(function ProcessedMessageTrackerMock() {
+    return {
+      initialize: vi.fn().mockResolvedValue(undefined),
+      isProcessed: vi.fn(),
+      markProcessed: vi.fn(),
+      close: vi.fn().mockResolvedValue(undefined),
+    }
+  }),
 }))
 
 // Mock StoreManager with EventEmitter methods
@@ -67,6 +70,51 @@ const createMockStoreManager = () => ({
   getStore: vi.fn(),
   updateActivity: vi.fn(),
 })
+
+const createMockAgentState = (messages: unknown[] = []) => ({
+  systemPrompt: '',
+  messages,
+})
+
+const getQueryLabel = (query: unknown): string => {
+  if (
+    typeof query === 'object' &&
+    query !== null &&
+    'label' in query &&
+    typeof query.label === 'string'
+  ) {
+    return query.label
+  }
+
+  return ''
+}
+
+const createConversationContextQueryMock = ({
+  conversations = [],
+  workers = [],
+  chatMessages = [],
+}: {
+  conversations?: unknown[]
+  workers?: unknown[]
+  chatMessages?: ChatMessage[]
+}) =>
+  vi.fn((query: unknown) => {
+    const label = getQueryLabel(query)
+
+    if (label.includes("FROM 'conversations'")) {
+      return conversations
+    }
+
+    if (label.includes("FROM 'workers'")) {
+      return workers
+    }
+
+    if (label.includes("FROM 'chatMessages'")) {
+      return chatMessages
+    }
+
+    return []
+  })
 
 describe('EventProcessor conversation history builder', () => {
   let eventProcessor: EventProcessor
@@ -266,6 +314,13 @@ describe('EventProcessor conversation history builder', () => {
 
   it('reports actual Pi iterations from turn_end events', async () => {
     const commit = vi.fn()
+    const currentUserMessage: ChatMessage = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      role: 'user',
+      message: 'Plan this task',
+      createdAt: new Date('2024-01-01T00:01:00Z'),
+    }
     const store = {
       commit,
       query: vi.fn().mockReturnValue([]),
@@ -277,9 +332,7 @@ describe('EventProcessor conversation history builder', () => {
     const listeners: Array<(event: any) => void> = []
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -304,17 +357,9 @@ describe('EventProcessor conversation history builder', () => {
       lastAccessedAt: Date.now(),
     })
 
-    const completed = await (processor as any).runAgenticLoop(
-      'store-1',
-      {
-        id: 'message-1',
-        conversationId: 'conversation-1',
-        role: 'user',
-        message: 'Plan this task',
-        createdAt: new Date(),
-      } satisfies ChatMessage,
-      { stopping: false } as any
-    )
+    const completed = await (processor as any).runAgenticLoop('store-1', currentUserMessage, {
+      stopping: false,
+    } as any)
 
     expect(completed).toBe(true)
     const completionEvents = commit.mock.calls.filter(
@@ -322,6 +367,81 @@ describe('EventProcessor conversation history builder', () => {
     )
     expect(completionEvents.length).toBe(1)
     expect(completionEvents[0][0].args.iterations).toBe(3)
+
+    processor.stopAll()
+  })
+
+  it('seeds Pi agent prompt and historical messages before prompting', async () => {
+    const commit = vi.fn()
+    const historicalUserMessage: ChatMessage = {
+      id: 'message-0',
+      conversationId: 'conversation-1',
+      role: 'user',
+      message: 'Previous context',
+      createdAt: new Date('2024-01-01T00:00:00Z'),
+    }
+    const currentUserMessage: ChatMessage = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      role: 'user',
+      message: 'Plan this task',
+      createdAt: new Date('2024-01-01T00:01:00Z'),
+    }
+    const store = {
+      commit,
+      query: createConversationContextQueryMock({
+        conversations: [{ id: 'conversation-1' }],
+        chatMessages: [historicalUserMessage, currentUserMessage],
+      }),
+    }
+    const storeManager = createMockStoreManager()
+    storeManager.getStore = vi.fn(() => store as any)
+
+    const processor = new EventProcessor(storeManager as any)
+    const listeners: Array<(event: any) => void> = []
+    const fakeAgentState = createMockAgentState()
+    let stateBeforePrompt: ReturnType<typeof createMockAgentState> | undefined
+    const fakeSession = {
+      agent: {
+        state: fakeAgentState,
+      },
+      subscribe: vi.fn((listener: (event: any) => void) => {
+        listeners.push(listener)
+        return vi.fn()
+      }),
+      setModel: vi.fn().mockResolvedValue(undefined),
+      prompt: vi.fn().mockImplementation(async () => {
+        stateBeforePrompt = {
+          systemPrompt: fakeAgentState.systemPrompt,
+          messages: [...fakeAgentState.messages],
+        }
+
+        for (const listener of listeners) {
+          listener({ type: 'agent_end', messages: [] })
+        }
+      }),
+    }
+
+    vi.spyOn(processor as any, 'getOrCreatePiSession').mockResolvedValue({
+      session: fakeSession,
+      sessionDir: '/tmp/pi-session',
+      lastAccessedAt: Date.now(),
+    })
+
+    const completed = await (processor as any).runAgenticLoop('store-1', currentUserMessage, {
+      stopping: false,
+    } as any)
+
+    expect(completed).toBe(true)
+    expect(stateBeforePrompt?.systemPrompt).toEqual(expect.any(String))
+    expect(stateBeforePrompt?.systemPrompt).not.toBe('')
+    expect(stateBeforePrompt?.messages).toEqual([
+      {
+        role: 'user',
+        content: 'Previous context',
+        timestamp: historicalUserMessage.createdAt.getTime(),
+      },
+    ])
 
     processor.stopAll()
   })
@@ -340,9 +460,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -464,9 +582,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -528,9 +644,7 @@ describe('EventProcessor conversation history builder', () => {
     const processor = new EventProcessor(storeManager as any)
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn(() => vi.fn()),
       setModel: vi.fn().mockResolvedValue(undefined),
@@ -587,9 +701,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -667,9 +779,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -732,10 +842,8 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
         // Simulate reused session with existing history already present.
-        state: { messages: [historicalAssistantMessage] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState([historicalAssistantMessage]),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -802,9 +910,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)
@@ -877,9 +983,7 @@ describe('EventProcessor conversation history builder', () => {
 
     const fakeSession = {
       agent: {
-        setSystemPrompt: vi.fn(),
-        state: { messages: [] },
-        replaceMessages: vi.fn(),
+        state: createMockAgentState(),
       },
       subscribe: vi.fn((listener: (event: any) => void) => {
         listeners.push(listener)

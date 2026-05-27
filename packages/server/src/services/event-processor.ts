@@ -1480,10 +1480,10 @@ export class EventProcessor {
     const { session } = sessionEntry
     const modelId = this.piModel?.id || conversation?.model || DEFAULT_MODEL
 
-    session.agent.setSystemPrompt(buildSystemPrompt(workerContext, navigationContext))
+    session.agent.state.systemPrompt = buildSystemPrompt(workerContext, navigationContext)
 
     if (session.agent.state.messages.length === 0 && conversationHistory.length > 0) {
-      session.agent.replaceMessages(conversationHistory)
+      session.agent.state.messages = conversationHistory
     }
 
     // Snapshot message count before prompting so we can distinguish current-run
@@ -1804,8 +1804,8 @@ export class EventProcessor {
     const initPromise = (async () => {
       await fs.mkdir(agentDir, { recursive: true })
 
-      const authStorage = new AuthStorage(path.join(agentDir, 'auth.json'))
-      const modelRegistry = new ModelRegistry(authStorage, path.join(agentDir, 'models.json'))
+      const authStorage = AuthStorage.create(path.join(agentDir, 'auth.json'))
+      const modelRegistry = ModelRegistry.create(authStorage, path.join(agentDir, 'models.json'))
       this.configurePiProviderOverrides(modelRegistry)
       const resourceLoader = new DefaultResourceLoader({
         cwd: process.cwd(),
