@@ -77,9 +77,6 @@ importers:
       '@effect/cluster':
         specifier: 0.58.2
         version: 0.58.2(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/sql@0.51.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/workflow@0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
-      '@effect/workflow':
-        specifier: 0.18.1
-        version: 0.18.1(@effect/experimental@0.60.0(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(@effect/platform@0.96.1(effect@3.21.2))(@effect/rpc@0.75.1(@effect/platform@0.96.1(effect@3.21.2))(effect@3.21.2))(effect@3.21.2)
       effect:
         specifier: 'catalog:'
         version: 3.21.2
@@ -349,10 +346,10 @@ importers:
         specifier: 'catalog:'
         version: 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64(684935bf596a853142a9114eed90cc8c)
       '@mariozechner/pi-ai':
-        specifier: ^0.73.1
+        specifier: ~0.73.1
         version: 0.73.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(ws@8.21.0)(zod@4.4.3)
       '@mariozechner/pi-coding-agent':
-        specifier: ^0.73.1
+        specifier: ~0.73.1
         version: 0.73.1(@modelcontextprotocol/sdk@1.29.0(zod@4.4.3))(ws@8.21.0)(zod@4.4.3)
       '@sentry/node':
         specifier: ^10.54.0

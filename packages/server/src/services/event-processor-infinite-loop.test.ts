@@ -21,6 +21,7 @@ vi.mock('./processed-message-tracker.js', () => {
   }
 
   return {
+    // Production constructs this with `new`, so the mock must be constructible.
     ProcessedMessageTracker: vi.fn(function ProcessedMessageTrackerMock() {
       return mockTracker
     }),

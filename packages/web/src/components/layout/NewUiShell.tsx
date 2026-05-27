@@ -240,7 +240,8 @@ export const NewUiShell: React.FC<NewUiShellProps> = ({
 
   const showOnlyJarvisDuringCampfire =
     onboarding.isActive && (onboarding.phase === 'campfire' || onboarding.phase === 'not_started')
-  const showDevDebugPanel = import.meta.env.DEV && fullBleed
+  const showDevDebugPanel =
+    (import.meta.env.DEV || import.meta.env.VITE_E2E_TEST_HOOKS === 'true') && fullBleed
   const isInitialFogEnabled = !onboarding.isFogDismissed
   const isInitialFogCurrentlyVisible = onboarding.uiPolicy.showFogOverlay && isInitialFogEnabled
 
