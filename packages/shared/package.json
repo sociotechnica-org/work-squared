@@ -1,6 +1,6 @@
 {
   "name": "@lifebuild/shared",
-  "version": "0.1.57",
+  "version": "0.1.58",
   "type": "module",
   "license": "FSL-1.1-ALv2",
   "main": "src/index.ts",
