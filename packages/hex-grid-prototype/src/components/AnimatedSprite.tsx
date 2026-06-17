@@ -1,5 +1,5 @@
 import { useFrame, useLoader } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { hexToWorld } from '../hex/math.js'
 import type { HexCoord } from '../hex/types.js'
@@ -90,7 +90,7 @@ export function AnimatedSprite({
         fragmentShader: baseFragmentShader,
         transparent: true,
         side: THREE.DoubleSide,
-        depthWrite: true,
+        depthWrite: false,
       }),
     [baseTexture]
   )
@@ -103,18 +103,31 @@ export function AnimatedSprite({
         fragmentShader: frameFragmentShader,
         transparent: true,
         side: THREE.DoubleSide,
-        depthWrite: true,
+        depthWrite: false,
       }),
     [frameTextures]
   )
+
+  useEffect(() => {
+    return () => {
+      baseMaterial.dispose()
+    }
+  }, [baseMaterial])
+
+  useEffect(() => {
+    return () => {
+      frameMaterial.dispose()
+    }
+  }, [frameMaterial])
 
   useFrame((_, delta) => {
     const state = frameRef.current
     state.elapsed += delta
     const frameDuration = 1 / fps
     if (state.elapsed >= frameDuration) {
-      state.elapsed -= frameDuration
-      state.index = (state.index + 1) % playOrder.length
+      const framesToAdvance = Math.floor(state.elapsed / frameDuration)
+      state.elapsed %= frameDuration
+      state.index = (state.index + framesToAdvance) % playOrder.length
       frameMaterial.uniforms.uTexture!.value = frameTextures[playOrder[state.index]!]
     }
   })

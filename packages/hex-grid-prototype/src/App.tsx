@@ -611,7 +611,7 @@ export function App() {
             <MapSprite key={sp.id} coord={sp.coord} url={sp.url} scale={sp.scale} />
           ))}
           <AnimatedSprite
-            coord={{ q: 1, r: -1, s: 0 }}
+            coord={{ q: 0, r: 2, s: -2 }}
             baseUrl='/sprites/campfire/logs.png'
             frames={campfireFlames}
             fps={10}
