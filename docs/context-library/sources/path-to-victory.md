@@ -24,6 +24,7 @@ LifeBuild wins when it becomes **the place where thoughtful people manage their 
 ## The Path
 
 ### Phase 0: Foundation (Current → Release 1)
+
 **Goal:** Prove the campfire works — first-time users feel the magic
 
 - [ ] Ship Release 1: The Campfire
@@ -35,6 +36,7 @@ LifeBuild wins when it becomes **the place where thoughtful people manage their 
 **Key bet:** The "sanctuary building" metaphor resonates emotionally, not just functionally
 
 ### Phase 1: Retention (Release 2-3)
+
 **Goal:** Users come back — the sanctuary becomes part of their routine
 
 - [ ] Return experience works (second visit feels natural)
@@ -46,6 +48,7 @@ LifeBuild wins when it becomes **the place where thoughtful people manage their 
 **Key bet:** Context compounds — Jarvis knowing your patterns is genuinely valuable
 
 ### Phase 2: Expansion (Release 4-6)
+
 **Goal:** The sanctuary grows — users invest in building out their space
 
 - [ ] Multiple attendants (agents) doing real work
@@ -56,6 +59,7 @@ LifeBuild wins when it becomes **the place where thoughtful people manage their 
 **Key bet:** Agents doing work for you (not just advising) is a step change in value
 
 ### Phase 3: Network (Release 7-9)
+
 **Goal:** LifeBuild becomes a community, not just a tool
 
 - [ ] Shared patterns/templates across users (anonymized)
@@ -66,6 +70,7 @@ LifeBuild wins when it becomes **the place where thoughtful people manage their 
 **Key bet:** Network effects in life management are possible and valuable
 
 ### Phase 4: Dominance
+
 **Goal:** LifeBuild is the default answer to "how do I manage my life?"
 
 - [ ] Category definition (we created "sanctuary building")
@@ -88,13 +93,13 @@ The immediate blockers between here and Phase 0 completion:
 
 ## What Could Kill Us
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Metaphor doesn't resonate | Medium | Fatal | Test with real users fast, be willing to pivot framing |
-| Jarvis isn't good enough | Medium | High | Invest in prompt craft, consider fine-tuning |
-| Context becomes portable | Low (for now) | High | Make context active (does things), not just passive (stores things) |
-| Bigger player copies us | Medium | Medium | Move fast, build brand, establish network effects |
-| Users don't return | High | Fatal | Obsess over return experience, build habits |
+| Risk                      | Likelihood    | Impact | Mitigation                                                          |
+| ------------------------- | ------------- | ------ | ------------------------------------------------------------------- |
+| Metaphor doesn't resonate | Medium        | Fatal  | Test with real users fast, be willing to pivot framing              |
+| Jarvis isn't good enough  | Medium        | High   | Invest in prompt craft, consider fine-tuning                        |
+| Context becomes portable  | Low (for now) | High   | Make context active (does things), not just passive (stores things) |
+| Bigger player copies us   | Medium        | Medium | Move fast, build brand, establish network effects                   |
+| Users don't return        | High          | Fatal  | Obsess over return experience, build habits                         |
 
 ---
 
@@ -104,4 +109,4 @@ See: [[open-questions.md]]
 
 ---
 
-*This document is a living path, not a frozen source. Update as we learn.*
+_This document is a living path, not a frozen source. Update as we learn._
