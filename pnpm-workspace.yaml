@@ -2,15 +2,15 @@ packages:
   - packages/*
 
 catalog:
-  '@livestore/adapter-node': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/adapter-web': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/devtools-vite': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/livestore': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/peer-deps': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/react': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/sync-cf': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/utils': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
-  '@livestore/wa-sqlite': 0.0.0-snapshot-8d0d18bba6c021185c3d993e5902fef5a2cb6b64
+  '@livestore/adapter-node': 0.4.0
+  '@livestore/adapter-web': 0.4.0
+  '@livestore/devtools-vite': 0.4.0
+  '@livestore/livestore': 0.4.0
+  '@livestore/peer-deps': 0.4.0
+  '@livestore/react': 0.4.0
+  '@livestore/sync-cf': 0.4.0
+  '@livestore/utils': 0.4.0
+  '@livestore/wa-sqlite': 0.4.0
   effect: ^3.21.2
   typescript: ^6.0.3
   '@types/node': ^25.9.1
